@@ -1,0 +1,29 @@
+name: REAPR Bounty Worker
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours
+  workflow_dispatch:         # Manual trigger anytime
+  push:
+    branches: [main]
+
+jobs:
+  bounty-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Run REAPR Bounty Worker
+        env:
+          REAPR_GH_TOKEN: ${{ secrets.REAPR_GH_TOKEN }}
+        run: python3 worker.py
+      
+      - name: Status
+        run: echo "REAPR worker cycle complete | phi=1.618033988749895"
