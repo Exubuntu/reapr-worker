@@ -1,0 +1,24 @@
+name: REAPR Beast Mode
+
+on:
+  schedule:
+    - cron: "0 */1 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  bounty-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: REAPR Beast Mode
+        env:
+          REAPR_GH_TOKEN: ${{ secrets.REAPR_GH_TOKEN }}
+          REAPR_AWS_URL: http://ec2-184-73-91-188.compute-1.amazonaws.com:8100
+          REAPR_LLM_URL: https://5378b1e6869eae0d-162-210-163-109.serveousercontent.com
+        run: python3 worker.py
