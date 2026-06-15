@@ -1,0 +1,51 @@
+name: REAPR Compute Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Task type: bounty_hunt | build_rust | analyze_repo'
+        required: true
+        default: 'bounty_hunt'
+      task_id:
+        description: 'Task ID'
+        required: false
+        default: 'auto'
+      payload:
+        description: 'JSON payload'
+        required: false
+        default: '{}'
+  schedule:
+    - cron: '0 */2 * * *'
+
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Rust (for build tasks)
+        if: ${{ inputs.task_type == 'build_rust' }}
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Run compute task
+        env:
+          REAPR_GH_TOKEN: ${{ secrets.REAPR_GH_TOKEN }}
+          REAPR_LLM_URL: ${{ secrets.REAPR_LLM_URL }}
+          TASK_TYPE: ${{ inputs.task_type || 'bounty_hunt' }}
+          TASK_ID: ${{ inputs.task_id || 'auto' }}
+          PAYLOAD: ${{ inputs.payload || '{}' }}
+        run: python3 worker.py
+      
+      - name: Report
+        run: |
+          echo "Compute task complete"
+          echo "phi = 1.618033988749895"
+          echo "This PC's power: augmented by GitHub Actions"
